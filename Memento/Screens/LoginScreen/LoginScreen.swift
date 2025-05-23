@@ -76,7 +76,7 @@ struct LoginScreen: View {
                 }
                 .opacity(animateButtons ? 1 : 0)
                 .onAppear {
-                    withAnimation(.easeIn(duration: 0.1).delay(0.1)) {
+                    withAnimation(.easeIn(duration: 0.3).delay(0.1)) {
                         animateButtons = true
                     }
                 }

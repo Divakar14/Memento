@@ -17,8 +17,11 @@ struct ContentView: View {
         ZStack {
             if showLaunchScreen {
                 SplashScreen(animationNamespace: namespace, animateTransition: animateTransition)
+                    .transition(.identity)
             } else {
                 LoginScreen(animationNamespace: namespace)
+                    .transition(.identity)
+                    .animation(nil, value: showLaunchScreen)
             }
         }
         .onAppear {
@@ -27,7 +30,7 @@ struct ContentView: View {
                     animateTransition = true
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                    withAnimation(.spring()) {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                         showLaunchScreen = false
                     }
                 }
