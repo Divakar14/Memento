@@ -17,11 +17,9 @@ struct ContentView: View {
         ZStack {
             if showLaunchScreen {
                 SplashScreen(animationNamespace: namespace, animateTransition: animateTransition)
-                    .transition(.identity)
             } else {
-                LoginScreen(animationNamespace: namespace)
-                    .transition(.identity)
-                    .animation(nil, value: showLaunchScreen)
+//                LoginScreen(animationNamespace: namespace)
+                MementoTabView()
             }
         }
         .onAppear {
