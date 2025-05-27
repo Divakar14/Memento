@@ -19,7 +19,12 @@ struct EditTaskView: View {
     @State private var priority: String = "High"
     @State private var isNotificationEnabled: Bool = false
     @State private var isMapEnabled: Bool = false
+    @State var showAlert: Bool = false
+    @State private var alertType: MyAlerts? = nil
     
+    enum MyAlerts {
+        case discard
+    }
     
     let priorities = ["Low", "Medium", "High"]
     
@@ -85,6 +90,7 @@ struct EditTaskView: View {
                     .background(Color.brandPrimary)
                     .foregroundColor(Color.brandHighlight)
                     .cornerRadius(12)
+                    .disabled(title.isEmpty)
                 }
                 .padding()
             }
@@ -92,18 +98,42 @@ struct EditTaskView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        dismiss()
+                        if (!title.isEmpty){
+                            alertType = .discard
+                            showAlert = true
+                        } else {
+                            dismiss()
+                        }
                     }
                     .foregroundStyle(Color.brandAccent)
                 }
             }
+            .alert(isPresented: $showAlert) {
+                getAlert()
+            }
         }
     }
     
-    func saveTask() {
-        taskViewModel.addTask(title: title, description: description, dueDate: dueDate, priority: priority, isNotificationEnabled: isNotificationEnabled, isMapEnabled: isMapEnabled, isCompleted: false)
-        print("Task saved!" +  "\(taskViewModel.tasks)")
-        dismiss()
+    func getAlert() -> Alert {
+        if alertType == .discard {
+            return Alert(title: Text("You have Unsaved Changes"), message: nil, primaryButton: .destructive(Text("Discard")) {
+                dismiss()
+            }, secondaryButton: .default(Text("Save & Exit")) {
+                let updatedTask = Task(
+                    id: task.id,
+                    title: title,
+                    description: description,
+                    dueDate: dueDate,
+                    priority: priority,
+                    isNotificationEnabled: isNotificationEnabled, isMapEnabled: isMapEnabled,
+                    isCompleted: task.isCompleted
+                )
+                taskViewModel.updateTask(updatedTask)
+                dismiss()
+            } )
+        } else {
+            return Alert(title: Text(""), message: Text(""), dismissButton: .default(Text("OK")))
+        }
     }
     
 }

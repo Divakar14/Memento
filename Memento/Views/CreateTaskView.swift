@@ -18,9 +18,15 @@ struct CreateTaskView: View {
     @State private var priority: String = "High"
     @State private var isNotificationEnabled: Bool = false
     @State private var isMapEnabled: Bool = false
+    @State var showAlert: Bool = false
+    @State private var alertType: MyAlerts? = nil
     
     
     let priorities = ["Low", "Medium", "High"]
+    
+    enum MyAlerts {
+        case discard
+    }
     
     var body: some View {
         
@@ -76,10 +82,18 @@ struct CreateTaskView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        dismiss()
+                        if (!title.isEmpty){
+                            alertType = .discard
+                            showAlert = true
+                        } else {
+                            dismiss()
+                        }
                     }
                     .foregroundStyle(Color.brandAccent)
                 }
+            }
+            .alert(isPresented: $showAlert) {
+                getAlert()
             }
         }
     }
@@ -88,6 +102,18 @@ struct CreateTaskView: View {
         taskViewModel.addTask(title: title, description: description, dueDate: dueDate, priority: priority, isNotificationEnabled: isNotificationEnabled, isMapEnabled: isMapEnabled, isCompleted: false)
         print("Task saved!" +  "\(taskViewModel.tasks)")
         dismiss()
+    }
+    
+    func getAlert() -> Alert {
+        if alertType == .discard {
+            return Alert(title: Text("You have Unsaved Changes"), message: nil, primaryButton: .destructive(Text("Discard")) {
+                dismiss()
+            }, secondaryButton: .default(Text("Save & Exit")) {
+                saveTask()
+            } )
+        } else {
+            return Alert(title: Text(""), message: Text(""), dismissButton: .default(Text("OK")))
+        }
     }
     
 }

@@ -12,13 +12,14 @@ struct MementoTabView: View {
     @State private var showModal: Bool = false
     @State private var showCreateTask: Bool = false
     @State private var showCreateNote: Bool = false
-    @State var taskViewModel: TaskViewModel = TaskViewModel()
+    @StateObject var taskViewModel: TaskViewModel = TaskViewModel()
+    @StateObject var noteViewModel: NoteViewModel = NoteViewModel()
     
     enum Tab {
-        case tasks, notes, calendar, profile
+        case home, calendar, profile
     }
     
-    @State private var selectedTab : Tab = .tasks
+    @State private var selectedTab : Tab = .home
     
     var body: some View {
         
@@ -28,10 +29,8 @@ struct MementoTabView: View {
             
             VStack {
                 switch selectedTab {
-                case .tasks:
-                    HomeScreen().environmentObject(taskViewModel)
-                case .notes:
-                    Text("Notes Screen").foregroundStyle(.black)
+                case .home:
+                    HomeScreen().environmentObject(taskViewModel).environmentObject(noteViewModel)
                 case .calendar:
                     Text("Calendar Screen").foregroundStyle(.black)
                 case .profile:
@@ -44,7 +43,7 @@ struct MementoTabView: View {
                 Spacer()
                 ZStack {
                     HStack {
-                        tabButton(icon: "house", tab: .tasks, title: "Home")
+                        tabButton(icon: "house", tab: .home, title: "Home")
 //                        tabButton(icon: "text.page", tab: .notes, title: "Notes")
 //                        Spacer().frame(width: 80)
                         tabButton(icon: "calendar", tab: .calendar, title: "Calendar")
@@ -118,7 +117,7 @@ struct MementoTabView: View {
                     CreateTaskView().environmentObject(taskViewModel)
                 }
                 .fullScreenCover(isPresented: $showCreateNote) {
-                    CreateNoteView()
+                    CreateNoteView().environmentObject(noteViewModel)
                 }
             }
         }

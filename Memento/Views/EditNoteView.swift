@@ -1,5 +1,5 @@
 //
-//  CreateNoteView.swift
+//  EditnoteView.swift
 //  Memento
 //
 //  Created by Divakar T R on 25/05/25.
@@ -7,11 +7,12 @@
 
 import SwiftUI
 
-struct CreateNoteView: View {
+struct EditNoteView: View {
     
     @EnvironmentObject var noteViewModel: NoteViewModel
     @Environment(\.dismiss) private var dismiss
     
+    @State var note: Note
     @State private var title: String = ""
     @State private var content: String = ""
     @State private var createdDate: Date = Date()
@@ -23,6 +24,13 @@ struct CreateNoteView: View {
     
     enum MyAlerts {
         case discard
+    }
+    
+    init(note: Note) {
+        self._note = State(initialValue: note)
+        self._title = State(initialValue: note.title)
+        self._content = State(initialValue: note.content)
+        self._createdDate = State(initialValue: note.createdDate)
     }
     
     var body: some View {
@@ -61,7 +69,6 @@ struct CreateNoteView: View {
                             .background(Color(.systemGray6))
                             .cornerRadius(12)
                     } else {
-                        markdownToolbar
                         TextEditor(text: $content)
                             .padding(8)
                             .background(Color(.secondarySystemBackground))
@@ -69,23 +76,23 @@ struct CreateNoteView: View {
                             .frame(minHeight: 250)
                     }
                     
-                    Button(action: {
-                        saveNote()
-                    }) {
-                        Text("Save Note")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(title.isEmpty ? Color.gray.opacity(0.5) : Color.brandPrimary)
-                            .foregroundColor(title.isEmpty ? .primary : Color.brandHighlight)
-                            .cornerRadius(12)
+                    Button("Save Changes"){
+                        let updatedNote = Note(
+                            id: note.id,
+                            title: title,
+                            content: content,
+                            createdDate: createdDate
+                        )
+                        noteViewModel.updateNote(updatedNote)
+                        dismiss()
                     }
-                    .disabled(title.isEmpty && content.isEmpty)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.brandPrimary)
+                    .foregroundColor(Color.brandHighlight)
+                    .cornerRadius(12)
+                    .disabled(title.isEmpty)
                     .padding(.top)
-                    
-                }
-                .sheet(isPresented: $showImagePicker) {
-                    ImagePicker(selectedImage: $selectedImage)
                 }
                 .padding()
                 .navigationTitle("New Note")
@@ -109,69 +116,31 @@ struct CreateNoteView: View {
         }
     }
     
-    func saveNote() {
-        noteViewModel.addNote(title: title, content: content, createdDate: createdDate)
-        dismiss()
-    }
-    
     func getAlert() -> Alert {
         if alertType == .discard {
             return Alert(title: Text("You have Unsaved Changes"), message: nil, primaryButton: .destructive(Text("Discard")) {
                 dismiss()
             }, secondaryButton: .default(Text("Save & Exit")) {
-                saveNote()
+                let updatedNote = Note(
+                    id: note.id,
+                    title: title,
+                    content: content,
+                    createdDate: createdDate
+                )
+                noteViewModel.updateNote(updatedNote)
+                dismiss()
             } )
         } else {
             return Alert(title: Text(""), message: Text(""), dismissButton: .default(Text("OK")))
         }
     }
     
-    var markdownToolbar: some View {
-        HStack {
-            markdownButton("**", tooltip: "Bold")
-            markdownButton("*", tooltip: "Italic")
-            markdownButton("##", tooltip: "Heading")
-            markdownButton("`", tooltip: "Code")
-            markdownButton("-", tooltip: "Bullet")
-        }
-        .font(.system(size: 18, weight: .bold))
-        .padding(8)
-        .background(Color(.systemGray5))
-        .cornerRadius(10)
-    }
-    
-    func markdownButton(_ tag: String, tooltip: String) -> some View {
-        Button(action: {
-            insertMarkdown(tag)
-        }) {
-            Text(tag)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 4)
-                .background(Color(.systemGray4))
-                .cornerRadius(6)
-                .accessibilityLabel(tooltip)
-        }
-    }
-    
-    func insertMarkdown(_ syntax: String) {
-        switch syntax {
-            case "**", "*", "`":
-                // Inline formatting - just append
-                content += "\(syntax)\(syntax)"
-            case "##":
-                // Heading formatting - insert at start of new line
-                content += "\n\(syntax) "
-            case "-":
-                // Bullet formatting - insert bullet point
-                content += "\n- "
-            default:
-                break
-            }
-    }
-    
 }
 
 #Preview {
-    CreateNoteView()
+    EditNoteView(note: Note(
+        id: UUID(), title: "Design Splash Screen",
+            content: "Add animation and gradient background to the splash screen",
+            createdDate: Date().addingTimeInterval(3600), // 1 hour later
+    ))
 }
-

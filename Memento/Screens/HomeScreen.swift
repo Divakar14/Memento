@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeScreen: View {
     
     @EnvironmentObject var taskViewModel: TaskViewModel
+    @EnvironmentObject var noteViewModel: NoteViewModel
     
     var body: some View {
         NavigationView {
@@ -38,6 +39,11 @@ struct HomeScreen: View {
                         TaskCard(task: task)
                     }
                     
+                    SectionHeader(title: "Saved Notes")
+                    ForEach(noteViewModel.notes) { note in
+                        NoteCard(note: note)
+                    }
+                    
                 }
                 .padding()
             }
@@ -58,5 +64,6 @@ struct SectionHeader : View {
 
 #Preview {
     var taskViewModel: TaskViewModel = TaskViewModel()
-    HomeScreen().environmentObject(taskViewModel)
+    var noteViewModel: NoteViewModel = NoteViewModel()
+    HomeScreen().environmentObject(taskViewModel).environmentObject(noteViewModel)
 }
