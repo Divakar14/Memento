@@ -16,7 +16,7 @@ struct CreateNoteView: View {
     @State private var content: String = ""
     @State private var createdDate: Date = Date()
     @State private var showImagePicker: Bool = false
-    @State private var selectedImage: UIImage? = nil
+    @State private var selectedImages: [UIImage] = []
     @State private var isPreviewing: Bool = false
     @State var showAlert: Bool = false
     @State private var alertType: MyAlerts? = nil
@@ -46,12 +46,18 @@ struct CreateNoteView: View {
                         }
                     }
                     
-                    if let image = selectedImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxHeight: 200)
-                            .cornerRadius(12)
+                    ForEach(Array(selectedImages.enumerated()), id: \.offset) { index, image in
+                        VStack(alignment: .leading) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxHeight: 200)
+                                .cornerRadius(12)
+                            Button("Remove Image") {
+                                selectedImages.remove(at: index)
+                            }
+                            .foregroundColor(.red)
+                        }
                     }
                     
                     if isPreviewing {
@@ -85,7 +91,7 @@ struct CreateNoteView: View {
                     
                 }
                 .sheet(isPresented: $showImagePicker) {
-                    ImagePicker(selectedImage: $selectedImage)
+                    ImagePicker(selectedImages: $selectedImages)
                 }
                 .padding()
                 .navigationTitle("New Note")
@@ -110,7 +116,8 @@ struct CreateNoteView: View {
     }
     
     func saveNote() {
-        noteViewModel.addNote(title: title, content: content, createdDate: createdDate)
+        let imageDataList = selectedImages.map { $0.jpegData(compressionQuality: 0.8)! }
+        noteViewModel.addNote(title: title, content: content, createdDate: createdDate, imageDataList: imageDataList)
         dismiss()
     }
     

@@ -23,6 +23,17 @@ struct NoteCard: View {
             Text(note.content)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+            if let imageDataList = note.imageDataList {
+                ForEach(imageDataList, id: \.self) { data in
+                    if let uiImage = UIImage(data: data) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxHeight: 200)
+                            .cornerRadius(12)
+                    }
+                }
+            }
             Text("Created Date: \(note.createdDate.formatted(date: .abbreviated, time: .shortened))")
                 .font(.footnote)
                 .foregroundColor(.secondary)

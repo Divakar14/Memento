@@ -11,8 +11,8 @@ class NoteViewModel: ObservableObject {
     
     @Published var notes: [Note] = []
     
-    func addNote(title: String, content: String, createdDate: Date) {
-        let newNote = Note(id: UUID(), title: title, content: content, createdDate: createdDate)
+    func addNote(title: String, content: String, createdDate: Date, imageDataList: [Data]?) {
+        let newNote = Note(id: UUID(), title: title, content: content, createdDate: createdDate, imageDataList: imageDataList)
         notes.append(newNote)
     }
     

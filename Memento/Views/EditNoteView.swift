@@ -16,8 +16,9 @@ struct EditNoteView: View {
     @State private var title: String = ""
     @State private var content: String = ""
     @State private var createdDate: Date = Date()
+    @State private var imageDataList: [Data] = []
     @State private var showImagePicker: Bool = false
-    @State private var selectedImage: UIImage? = nil
+    @State private var selectedImages: [UIImage] = []
     @State private var isPreviewing: Bool = false
     @State var showAlert: Bool = false
     @State private var alertType: MyAlerts? = nil
@@ -31,6 +32,9 @@ struct EditNoteView: View {
         self._title = State(initialValue: note.title)
         self._content = State(initialValue: note.content)
         self._createdDate = State(initialValue: note.createdDate)
+        self._imageDataList = State(initialValue: note.imageDataList!)
+        self._imageDataList = State(initialValue: note.imageDataList ?? [])
+        self._selectedImages = State(initialValue: note.imageDataList?.compactMap { UIImage(data: $0) } ?? [])
     }
     
     var body: some View {
@@ -54,12 +58,20 @@ struct EditNoteView: View {
                         }
                     }
                     
-                    if let image = selectedImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxHeight: 200)
-                            .cornerRadius(12)
+                    ForEach(Array(selectedImages.enumerated()), id: \.offset) { index, image in
+                        VStack(alignment: .leading) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxHeight: 200)
+                                .cornerRadius(12)
+                            
+                            Button("Remove Image") {
+                                selectedImages.remove(at: index)
+                                imageDataList.remove(at: index)
+                            }
+                            .foregroundColor(.red)
+                        }
                     }
                     
                     if isPreviewing {
@@ -81,7 +93,8 @@ struct EditNoteView: View {
                             id: note.id,
                             title: title,
                             content: content,
-                            createdDate: createdDate
+                            createdDate: createdDate,
+                            imageDataList: imageDataList
                         )
                         noteViewModel.updateNote(updatedNote)
                         dismiss()
@@ -93,6 +106,12 @@ struct EditNoteView: View {
                     .cornerRadius(12)
                     .disabled(title.isEmpty)
                     .padding(.top)
+                }
+                .sheet(isPresented: $showImagePicker) {
+                    ImagePicker(selectedImages: $selectedImages)
+                }
+                .onChange(of: selectedImages) {
+                    imageDataList = selectedImages.compactMap { $0.jpegData(compressionQuality: 0.8) }
                 }
                 .padding()
                 .navigationTitle("New Note")
@@ -125,7 +144,8 @@ struct EditNoteView: View {
                     id: note.id,
                     title: title,
                     content: content,
-                    createdDate: createdDate
+                    createdDate: createdDate,
+                    imageDataList: imageDataList
                 )
                 noteViewModel.updateNote(updatedNote)
                 dismiss()
